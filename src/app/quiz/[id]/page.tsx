@@ -66,7 +66,7 @@ export default function QuizPage() {
   
     try {
       // Send the answer to the server
-      const response = await fetch(`/api/quiz`, {
+      const response = await fetch(`https://ruetcse24quiz/api/quiz`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
