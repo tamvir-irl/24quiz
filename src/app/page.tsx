@@ -35,7 +35,7 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("https://ruetcse24quiz/api/register", {
+      const response = await fetch("https://ruetcse24quiz.vercel.app/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
