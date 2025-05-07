@@ -4,7 +4,11 @@ import path from "path";
 
 // File path to store quiz answers
 const filePath = path.join(process.cwd(), "data", "quizAnswers.json");
-
+type QuizAnswer = {
+  quizId: number;
+  answer: string | null;
+  roll: string;
+};
 // Ensure the file exists
 function ensureFileExists() {
   if (!fs.existsSync(filePath)) {
@@ -21,7 +25,7 @@ function loadQuizAnswers() {
 }
 
 // Save quiz answers to file
-function saveQuizAnswers(answers: any) {
+function saveQuizAnswers(answers: QuizAnswer[]) {
   fs.writeFileSync(filePath, JSON.stringify({ answers }, null, 2));
 }
 
