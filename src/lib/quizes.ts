@@ -37,7 +37,7 @@ export const quizes = [
                     Doctor Strange is thinking about time, and now he needs your help!`,
         options: [
             {
-                type: "number",
+                type: "text",
                 value: "",
                 label: "Your answer",
                 placeholder: "Thinkkk"
