@@ -12,7 +12,7 @@ export default function Home() {
     <div className="p-4 w-full h-screen">
       <h1 className="text-center mt-4 text-2xl">Welcome to RUET kiddos!</h1>
       <p className="text-center mt-4 text-xl">
-        This is a short quiz game! Answer them all correctly and your senior Imran Hasan will give you a treat!!
+        This is a short quiz game! Answer them all correctly and your senior bhai will give you a treat!!
         <br />
         (Valid Until 3 PM)
       </p>
