@@ -9,11 +9,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react"; // Import the Loader2 spinner
 
 export default function Login() {
   const [roll, setRoll] = useState("");
   const [nickname, setNickname] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
   // Check registration status on mount
@@ -34,8 +36,9 @@ export default function Login() {
       return;
     }
 
+    setIsLoading(true); // Start loading state
     try {
-      console.log(roll, nickname)
+      console.log(roll, nickname);
       const response = await fetch("/api/register", {
         method: "POST",
         headers: {
@@ -51,7 +54,7 @@ export default function Login() {
         router.push("/credits");
         localStorage.setItem("roll", roll);
         localStorage.setItem("nickname", nickname);
-        localStorage.setItem("sessionEnded", "true")
+        localStorage.setItem("sessionEnded", "true");
         setIsRegistered(true);
         return;
       }
@@ -64,6 +67,8 @@ export default function Login() {
     } catch (error) {
       alert("An error occurred while checking registration.");
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false); // Stop loading state after the operation
     }
   };
 
@@ -103,7 +108,9 @@ export default function Login() {
               </CardContent>
               <br />
               <CardFooter className="flex justify-end">
-                <Button type="submit">Register</Button>
+                <Button type="submit" disabled={isLoading}> 
+                  {isLoading ? <Loader2 className="animate-spin mr-2" /> : "Register"}
+                </Button>
               </CardFooter>
             </form>
           )}
