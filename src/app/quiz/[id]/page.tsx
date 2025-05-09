@@ -14,6 +14,7 @@ import "katex/dist/katex.min.css";
 import { quizes } from "@/lib/quizes"; // Adjust the path if needed
 import { AntiCheatContext } from "@/context/AntiCheatContext";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react"; // Import the loader
 
 export default function QuizPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -23,6 +24,7 @@ export default function QuizPage() {
   const [isSessionEnded, setIsSessionEnded] = useState<boolean>(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0); // Track current quiz
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false); // State to control the loading spinner
 
   const router = useRouter();
   const quiz = quizes[currentQuizIndex]; // Get current quiz based on index
@@ -35,7 +37,7 @@ export default function QuizPage() {
       setTimeLeft(quiz.time); // Start the timer based on the quiz time
     }
   }, [quiz.time, currentQuizIndex]);
-  
+
   useEffect(() => {
     if (timeLeft === 0) {
       endSession();
@@ -47,7 +49,6 @@ export default function QuizPage() {
       return () => clearInterval(timerId); // Clean up interval on unmount
     }
   }, [timeLeft]);
-
 
   // Check if the question has already been answered on mount
   useEffect(() => {
@@ -64,6 +65,7 @@ export default function QuizPage() {
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // Set loading state to true
     try {
       const roll = localStorage.getItem("roll");
 
@@ -106,8 +108,11 @@ export default function QuizPage() {
     } catch (err) {
       console.error("Submission failed", err);
       alert("Submission failed, please try again.");
+    } finally {
+      setLoading(false); // Set loading state back to false after completion
     }
   };
+
   if (isSessionEnded) {
     setTimeout(() => {
       router.push("/credits");
@@ -118,6 +123,7 @@ export default function QuizPage() {
       </div>
     );
   }
+
   if (isEliminated) {
     return (
       <div className="p-4 w-full h-screen flex justify-center items-center">
@@ -125,8 +131,6 @@ export default function QuizPage() {
       </div>
     );
   }
-
-  
 
   if (isAnswered) {
     return (
@@ -199,7 +203,9 @@ export default function QuizPage() {
             ))}
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : "Submit"}
+            </Button>
           </CardFooter>
         </Card>
       </div>
