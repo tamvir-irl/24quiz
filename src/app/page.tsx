@@ -51,6 +51,7 @@ export default function Login() {
         router.push("/credits");
         localStorage.setItem("roll", roll);
         localStorage.setItem("nickname", nickname);
+        localStorage.setItem("sessionEnded", "true")
         setIsRegistered(true);
         return;
       }
