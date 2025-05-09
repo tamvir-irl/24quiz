@@ -11,33 +11,34 @@ import { useState, useEffect, useContext } from "react";
 import BlockMath from "@matejmazur/react-katex";
 import InlineMath from "@matejmazur/react-katex";
 import "katex/dist/katex.min.css";
-import { quizes } from "@/lib/quizes"; // Adjust the path if needed
+import { quizes } from "@/lib/quizes";
 import { AntiCheatContext } from "@/context/AntiCheatContext";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react"; // Import the loader
+import { Loader2 } from "lucide-react";
 
 export default function QuizPage() {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<string>(""); // Unified state for both radio and text inputs
   const { isEliminated } = useContext(AntiCheatContext);
-  const [textAnswer, setTextAnswer] = useState<string>("");
-  const [timeLeft, setTimeLeft] = useState<number>(999); // Timer state
+  const [timeLeft, setTimeLeft] = useState<number>(999);
   const [isSessionEnded, setIsSessionEnded] = useState<boolean>(false);
-  const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0); // Track current quiz
+  const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false); // State to control the loading spinner
+  const [loading, setLoading] = useState<boolean>(false);
 
   const router = useRouter();
-  const quiz = quizes[currentQuizIndex]; // Get current quiz based on index
+  const quiz = quizes[currentQuizIndex];
 
+  // Load session status and set timer
   useEffect(() => {
     const sessionStatus = localStorage.getItem("sessionEnded");
     if (sessionStatus === "true") {
       setIsSessionEnded(true);
     } else {
-      setTimeLeft(quiz.time); // Start the timer based on the quiz time
+      setTimeLeft(quiz.time);
     }
   }, [quiz.time, currentQuizIndex]);
 
+  // Countdown timer
   useEffect(() => {
     if (timeLeft === 0) {
       endSession();
@@ -45,12 +46,11 @@ export default function QuizPage() {
       const timerId = setInterval(() => {
         setTimeLeft((prevTime) => prevTime - 1000);
       }, 1000);
-
-      return () => clearInterval(timerId); // Clean up interval on unmount
+      return () => clearInterval(timerId);
     }
   }, [timeLeft]);
 
-  // Check if the question has already been answered on mount
+  // Check if the question was already answered
   useEffect(() => {
     if (typeof window !== "undefined") {
       const ans = localStorage.getItem(`answered${quiz.id}`) === "true";
@@ -60,12 +60,13 @@ export default function QuizPage() {
 
   const endSession = () => {
     setIsSessionEnded(true);
-    localStorage.setItem("sessionEnded", "true"); // Mark session as ended
+    localStorage.setItem("sessionEnded", "true");
     alert("Your session has ended!");
   };
 
+  // Handle quiz submission
   const handleSubmit = async () => {
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     try {
       const roll = localStorage.getItem("roll");
 
@@ -79,7 +80,7 @@ export default function QuizPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quizId: quiz.id,
-          answer: quiz.options.some(option => option.type === "text") ? textAnswer : selectedAnswer || "null",
+          answer: answer || "null",
           roll: roll,
         }),
       });
@@ -87,16 +88,13 @@ export default function QuizPage() {
       const result = await response.json();
 
       if (response.ok) {
-        // Mark the quiz as answered in localStorage
         localStorage.setItem(`answered${quiz.id}`, "true");
         setIsAnswered(true);
 
-        // Move to the next quiz
         const nextQuizIndex = currentQuizIndex + 1;
         if (nextQuizIndex < quizes.length) {
           setCurrentQuizIndex(nextQuizIndex);
-          setSelectedAnswer("null");
-          setTextAnswer("");
+          setAnswer(""); // Clear the answer for the next quiz
         } else {
           alert("You have completed all quizzes!");
           localStorage.setItem("sessionEnded", "true");
@@ -109,7 +107,7 @@ export default function QuizPage() {
       console.error("Submission failed", err);
       alert("Submission failed, please try again.");
     } finally {
-      setLoading(false); // Set loading state back to false after completion
+      setLoading(false);
     }
   };
 
@@ -145,9 +143,9 @@ export default function QuizPage() {
   const [textPart, mathPart] = quiz.question.split("\n").reduce(
     (acc, line) => {
       if (line.startsWith("(x-")) {
-        acc[1] = line; // Math part
+        acc[1] = line;
       } else {
-        acc[0] += line + "<br />"; // Text part
+        acc[0] += line + "<br />";
       }
       return acc;
     },
@@ -162,8 +160,7 @@ export default function QuizPage() {
           <CardHeader className="flex justify-between">
             <div>Quiz {quiz.id}</div>
             <div className="text-sm text-gray-500">
-              {new Date(timeLeft).toISOString().substr(14, 5)}{" "}
-              {/* Timer format */}
+              {new Date(timeLeft).toISOString().substr(14, 5)}
             </div>
           </CardHeader>
           <CardContent>
@@ -180,10 +177,10 @@ export default function QuizPage() {
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
-                      name="quiz-option"
+                      name={`quiz-option-${quiz.id}`}
                       value={option.value}
-                      checked={selectedAnswer === option.value}
-                      onChange={() => setSelectedAnswer(option.value)}
+                      checked={answer === option.value}
+                      onChange={() => setAnswer(option.value)}
                     />
                     <InlineMath>{option.label}</InlineMath>
                   </label>
@@ -194,8 +191,8 @@ export default function QuizPage() {
                     <Input
                       type="text"
                       placeholder={option.placeholder || ""}
-                      value={textAnswer}
-                      onChange={(e) => setTextAnswer(e.target.value)}
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
                     />
                   </div>
                 )}

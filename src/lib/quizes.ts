@@ -6,13 +6,13 @@ export const quizes = [
       options: [
         {
           type: "radio",
-          value: "1",
+          value: "x^{26} - (abcde...z)x^{25} - ....",
           label: String.raw`x^{26} - (abcde...z)x^{25} - ....`,
           placeholder: null,
         },
         {
           type: "radio",
-          value: "2",
+          value: "(abcde...z)x^{26} - (bcde...z)x^{25} - ....",
           label: String.raw`(abcde...z)x^{26} - (bcde...z)x^{25} - ....`,
           placeholder: null,
         },
