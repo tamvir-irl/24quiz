@@ -79,7 +79,7 @@ export default function QuizPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quizId: quiz.id,
-          answer: selectedAnswer || textAnswer || "null",
+          answer: quiz.options.some(option => option.type === "text") ? textAnswer : selectedAnswer || "null",
           roll: roll,
         }),
       });
