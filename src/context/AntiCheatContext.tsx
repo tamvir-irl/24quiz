@@ -26,11 +26,10 @@ export const AntiCheatProvider = ({ children }: { children: ReactNode }) => {
 
     // Eliminate the user and redirect
     const eliminateUser = () => {
-      const sessionEnded = localStorage.getItem("sessionEnded")
-      if(!sessionEnded){
+      const sessionEnded = localStorage.getItem("sessionEnded");
+      if (!sessionEnded) {
         setIsEliminated(true);
         localStorage.setItem("isEliminated", "true");
-        //alert("You have been eliminated for violating the rules!");
         router.push("/credits");
       }
     };
@@ -47,9 +46,21 @@ export const AntiCheatProvider = ({ children }: { children: ReactNode }) => {
       eliminateUser();
     };
 
-    // Handle window resize (screen size or splitting)
+    // Handle window resize (screen split detection)
     const handleResize = () => {
-      if (window.innerWidth !== initialWidth || window.innerHeight !== initialHeight) {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      const heightDifference = Math.abs(newHeight - initialHeight);
+      const widthDifference = Math.abs(newWidth - initialWidth);
+
+      // Detect if the keyboard is shown on mobile
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      const isKeyboard = isMobile && heightDifference > 100 && widthDifference < 50;
+
+      // Check for screen splitting (significant change in both width and height)
+      const isScreenSplit = !isKeyboard && (widthDifference > 100 || heightDifference > 100);
+
+      if (isScreenSplit) {
         eliminateUser();
       }
     };
