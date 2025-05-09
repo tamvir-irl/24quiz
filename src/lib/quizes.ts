@@ -23,7 +23,7 @@ export const quizes = [
           placeholder: "Type your answer here",
         },
       ],
-      time: 40000,
+      time: 60000,
       answer: "0",
     },
     {
@@ -43,7 +43,7 @@ export const quizes = [
                 placeholder: "Thinkkk"
             }
         ],
-        time: 60000,
+        time: 90000,
         answer: "3"
     },
     {
@@ -94,7 +94,7 @@ export const quizes = [
           },
 
         ],
-        time: 60000, // 1-minute timer for answering the quiz
+        time: 90000, // 1-minute timer for answering the quiz
         answer: "042",
       }
     // Add more quizzes as needed

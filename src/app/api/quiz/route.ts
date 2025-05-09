@@ -1,52 +1,20 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-
-// File path to store quiz answers
-const filePath = path.join(process.cwd(), "data", "quizAnswers.json");
-type QuizAnswer = {
-  quizId: number;
-  answer: string | null;
-  roll: string;
-};
-// Ensure the file exists
-function ensureFileExists() {
-  if (!fs.existsSync(filePath)) {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify({ answers: [] }, null, 2));
-  }
-}
-
-// Load quiz answers from file
-function loadQuizAnswers() {
-  ensureFileExists();
-  const data = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(data);
-}
-
-// Save quiz answers to file
-function saveQuizAnswers(answers: QuizAnswer[]) {
-  fs.writeFileSync(filePath, JSON.stringify({ answers }, null, 2));
-}
+import connectToDatabase from "@/lib/mongodb";
+import Answer from "@/models/Answer";
 
 export async function POST(request: Request) {
   try {
     const { quizId, answer, roll } = await request.json();
 
-    if (quizId === undefined || answer === undefined) {
-      return NextResponse.json(
-        { error: "Missing quiz ID or answer" },
-        { status: 400 }
-      );
+    if (!quizId || !roll) {
+      return NextResponse.json({ error: "Missing quiz ID or roll" }, { status: 400 });
     }
 
-    const quizAnswers = loadQuizAnswers().answers;
+    await connectToDatabase();
 
-    // Store the quiz answer
-    quizAnswers.push({ quizId, answer, roll });
-
-    // Save updated answers to file
-    saveQuizAnswers(quizAnswers);
+    // Save the answer to the database
+    const newAnswer = new Answer({ quizId, answer: answer || null, roll });
+    await newAnswer.save();
 
     return NextResponse.json({ success: true });
   } catch (error) {

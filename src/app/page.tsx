@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function Login() {
   const [roll, setRoll] = useState("");
   const [nickname, setNickname] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
@@ -35,7 +35,8 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("https://ruetcse24quiz.vercel.app/api/register", {
+      console.log(roll, nickname)
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,13 +68,10 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen">
-      <h1 className="text-center mt-4 text-2xl">Welcome to RUET CSE kiddos!</h1>
-      <p className="text-center mt-4 text-xl">
-        This is a short quiz game! Answer them all correctly and your senior Imran Hasan will give you a treat!!
-      </p>
+      <h1 className="text-center mt-4 text-2xl">RUET CSE Quiz - Register</h1>
       <div className="w-full h-full flex justify-center items-center p-4">
         <Card className="w-full max-w-lg -mt-40">
-          <CardHeader>Student Information</CardHeader>
+          <CardHeader>Registration</CardHeader>
           {isRegistered ? (
             <CardContent>
               <h1 className="text-center text-lg font-semibold mb-4 text-green-500">
@@ -104,7 +102,7 @@ export default function Home() {
               </CardContent>
               <br />
               <CardFooter className="flex justify-end">
-                <Button type="submit">Next</Button>
+                <Button type="submit">Register</Button>
               </CardFooter>
             </form>
           )}

@@ -24,7 +24,7 @@ export default function QuizPage() {
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0); // Track current quiz
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
   const [roll, setRoll] = useState<string | null>(null);
-  const router = useRouter()
+  const router = useRouter();
   const quiz = quizes[currentQuizIndex]; // Get current quiz based on index
 
   useEffect(() => {
@@ -48,12 +48,20 @@ export default function QuizPage() {
     }
   }, [timeLeft]);
 
-  useEffect(()=>{
-    if(typeof window !== "undefined"){
+  useEffect(() => {
+    if (typeof window !== "undefined") {
       const r = localStorage.getItem("roll");
       setRoll(r);
     }
-  }, [])
+  }, []);
+
+  // Check if the question has already been answered on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ans = localStorage.getItem(`answered${quiz.id}`) === "true";
+      setIsAnswered(ans);
+    }
+  }, [quiz.id]);
 
   const endSession = () => {
     setIsSessionEnded(true);
@@ -62,69 +70,53 @@ export default function QuizPage() {
   };
 
   const handleSubmit = async () => {
-    const answer = selectedAnswer || textAnswer || null;
-  
     try {
-      // Send the answer to the server
-      const response = await fetch(`https://ruetcse24quiz.vercel.app/api/quiz`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          quizId: quiz.id,
-          answer: answer,
-          roll: roll
-        }),
-      });
-  
-      const result = await response.json();
-  
-      if (!response.ok) {
-        alert(`Error: ${result.error}`);
+      const roll = localStorage.getItem("roll");
+
+      if (!roll) {
+        alert("User is not registered!");
         return;
       }
-  
-      // Mark the quiz as answered
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`answeredQuiz${quiz.id}`, "true");
-      }
-  
-      // Move to the next quiz
-      const nextQuizIndex = currentQuizIndex + 1;
-      if (nextQuizIndex < quizes.length) {
-        setCurrentQuizIndex(nextQuizIndex);
-        setSelectedAnswer(null);
-        setTextAnswer("");
-        setIsAnswered(false);
+
+      const response = await fetch("/api/quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizId: quiz.id,
+          answer: selectedAnswer || textAnswer || "null",
+          roll,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Mark the quiz as answered in localStorage
+        localStorage.setItem(`answered${quiz.id}`, "true");
+        setIsAnswered(true);
+
+        // Move to the next quiz
+        const nextQuizIndex = currentQuizIndex + 1;
+        if (nextQuizIndex < quizes.length) {
+          setCurrentQuizIndex(nextQuizIndex);
+          setSelectedAnswer("null");
+          setTextAnswer("");
+        } else {
+          alert("You have completed all quizzes!");
+          localStorage.setItem("sessionEnded", "true");
+          router.push("/credits");
+        }
       } else {
-        alert("You have completed all quizzes!");
-        setIsSessionEnded(true);
-        localStorage.setItem("sessionEnded", "true");
-        router.push("/credits");
+        alert(`Error: ${result.error}`);
       }
-    } catch (error) {
-      console.error("Error submitting answer:", error);
-      //alert("An error occurred while submitting the answer.");
+    } catch (err) {
+      console.error("Submission failed", err);
+      alert("Submission failed, please try again.");
     }
   };
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const ans = localStorage.getItem(`answeredQuiz${quiz.id}`) === "true";
-      setIsAnswered(ans);
-    }
-  }, [quiz.id]); // Depend on quiz.id to update when the quiz changes
-  if (isEliminated) {
-    return (
-      <div className="p-4 w-full h-screen flex justify-center items-center">
-        <h1 className="text-2xl text-red-500">You have been eliminated!</h1>
-      </div>
-    );
-  }
   if (isSessionEnded) {
-    setTimeout(()=>{
-        router.push("/credits")
+    setTimeout(() => {
+      router.push("/credits");
     }, 2000);
     return (
       <div className="p-4 w-full h-screen flex justify-center items-center">
@@ -132,6 +124,16 @@ export default function QuizPage() {
       </div>
     );
   }
+  if (isEliminated) {
+    return (
+      <div className="p-4 w-full h-screen flex justify-center items-center">
+        <h1 className="text-2xl text-red-500">You have been eliminated!</h1>
+      </div>
+    );
+  }
+
+  
+
   if (isAnswered) {
     return (
       <div className="p-4 w-full h-screen flex justify-center items-center">
@@ -168,8 +170,11 @@ export default function QuizPage() {
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-            <div className="mb-4" dangerouslySetInnerHTML={{ __html: textPart }} />
-            {mathPart && <BlockMath>{mathPart}</BlockMath>}
+              <div
+                className="mb-4"
+                dangerouslySetInnerHTML={{ __html: textPart }}
+              />
+              {mathPart && <BlockMath>{mathPart}</BlockMath>}
             </div>
             {quiz.options.map((option, index) => (
               <div key={index} className="mb-2">
