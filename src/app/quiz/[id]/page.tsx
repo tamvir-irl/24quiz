@@ -23,7 +23,7 @@ export default function QuizPage() {
   const [isSessionEnded, setIsSessionEnded] = useState<boolean>(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0); // Track current quiz
   const [isAnswered, setIsAnswered] = useState<boolean>(false);
-  const [roll, setRoll] = useState<string | null>(null);
+
   const router = useRouter();
   const quiz = quizes[currentQuizIndex]; // Get current quiz based on index
 
@@ -48,12 +48,6 @@ export default function QuizPage() {
     }
   }, [timeLeft]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const r = localStorage.getItem("roll");
-      setRoll(r);
-    }
-  }, []);
 
   // Check if the question has already been answered on mount
   useEffect(() => {
@@ -84,7 +78,7 @@ export default function QuizPage() {
         body: JSON.stringify({
           quizId: quiz.id,
           answer: selectedAnswer || textAnswer || "null",
-          roll,
+          roll: roll,
         }),
       });
 
